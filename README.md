@@ -24,7 +24,7 @@ A lógica é simples: ao aproximar uma tag RFID do leitor, o sistema verifica se
 - ESP32 WROOM-32
 - [Leitor RFID + Tag e Cartão (MFRC522)](https://www.eletrogate.com/kit-modulo-rfid-mfrc522-1356-mhz)
 - [Buzzer Ativo 5V](https://www.eletrogate.com/buzzer-ativo-5v)
-- LEDs difusos 3mm (Azul, Verde, Vermelho) + resistores 10k ohms
+- LEDs difusos 3mm (Azul, Verde, Vermelho) + resistores
 - [Relé 1 Canal 5V](https://www.eletrogate.com/modulo-rele-1-canal-5v)
 - Jumpers macho-fêmea
 - Conversor de tensão

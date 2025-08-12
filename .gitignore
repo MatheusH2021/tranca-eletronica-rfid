@@ -1,0 +1,36 @@
+# Ignore build output directories
+/build/
+/components/*/build/
+
+# Ignore generated files and logs
+**/CMakeFiles/
+/CMakeCache.txt
+/Makefile
+/config/
+/*.config
+/.esp-idf/
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files
+.vscode/
+.devcontainer/
+/.idea/
+/*.iml
+
+# Ignore log files
+*.log
+
+# Ignore dependency manager files
+.esp/
+
+# Ignore project-specific files (if you're using custom settings)
+*/*.a
+*/*.o
+
+#Configuration
+sdkconfig
+sdkconfig.old
+dependencies.lock

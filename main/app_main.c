@@ -449,7 +449,7 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
         msg_id = esp_mqtt_client_publish(client, MQTT_BROKER_TOPIC, json_msg_conect, 0, 1, 0);
         ESP_LOGI(TAG, "Mensagem de conexão enviada com sucesso, msg_id=%d", msg_id);
 
-        // Inscreve a esp32 no topico "/ifpe/ads/embarcados/controle_diferenciado"
+        // Inscreve a esp32 nos topicos definidos 
         msg_id = esp_mqtt_client_subscribe(client, MQTT_BROKER_TOPIC, 1);
         msg_id = esp_mqtt_client_subscribe(client, MQTT_BROKER_TOPIC_AUT, 1);
         msg_id = esp_mqtt_client_subscribe(client, MQTT_BROKER_TOPIC_UNLOCK, 1);

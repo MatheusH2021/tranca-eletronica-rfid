@@ -94,10 +94,19 @@ Neste projeto, a alimentação é feita com uma **fonte de 12V 10A**, que supre 
 ```
 [Fonte 12V] ─┬─> [Conversor Step-down] ──> [ESP32 + Componentes (5V)]
              │
-             └─> [Relé] ──> [Diodo 1N5408] ──> [Tranca 12V]
+             └─> [COM do Relé] ──> [Diodo 1N5408] ──> [Tranca 12V]
 ```
-
 Essa abordagem garante que todos os componentes sejam alimentados corretamente e com segurança, sem sobrecarregar a ESP32 ou correr risco de retorno de corrente.
+
+## ⚙️ Esquema ilustrativo do projeto
+---
+
+<img width="900" height="500" alt="Captura de tela 2025-08-12 102354" src="https://github.com/user-attachments/assets/842efbcc-3c60-41ab-91b5-00ac60d8ea87" />
+
+> 💡 A linha de energia da protoboard do lado de baixo é alimentada com 12v, e a linha de cima é alimentada pelo coversor MP1584 com 5v
+
+> 💡No esquema a fechadura 12v não está presente, mas ela também faz parte do projeto, conectada o GND a linha inferior negativa da protoboard e o positivo conectado a saida NC do relé. A entrada COM do relé também recebe os 12v.
+---
 
 ## 📡 Configuração do Broker MQTT (Mosquitto)
 
@@ -200,7 +209,7 @@ idf.py monitor       # Inicia o monitor serial para visualizar os logs
 ```
 
 > Se estiver usando o VSCode com ESP-IDF:
-- Clique nos ícones "Build", "Flash" e "Monitor" na barra lateral da extensão.
+- Clique nos ícones "Build", "Flash" e "Monitor" na barra inferior da extensão.
 
 ---
 

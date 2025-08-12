@@ -1,78 +1,255 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C5 | ESP32-C6 | ESP32-C61 | ESP32-H2 | ESP32-P4 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | --------- | -------- | -------- | -------- | -------- |
+# 🔒 Projeto Tranca Eletrônica RFID (ESP32)
 
-# ESP-MQTT sample application
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+Este projeto consiste em uma tranca eletrônica com autenticação via **tags/cartões RFID**, utilizando uma **ESP32**, um **leitor RFID MFRC522** e uma **fechadura eletrônica 12V**.
 
-This example connects to the broker URI selected using `idf.py menuconfig` (using mqtt tcp transport) and as a demonstration subscribes/unsubscribes and send a message on certain topic.
-(Please note that the public broker is maintained by the community so may not be always available, for details please see this [disclaimer](https://iot.eclipse.org/getting-started/#sandboxes))
+A lógica é simples: ao aproximar uma tag RFID do leitor, o sistema verifica se a tag é válida através de um broker se comunicando com uma API externa.  
+- Se for **válida**, a fechadura é destrancada.  
+- Se **inválida ou não cadastrada**, o acesso é negado.
 
-Note: If the URI equals `FROM_STDIN` then the broker address is read from stdin upon application startup (used for testing)
+> ⚠️ **Este projeto funciona em conjunto com a API:** [Projeto Tranca API](<https://github.com/MatheusH2021/API-TRANCA.git>)  
+> Para funcionamento completo, clone e configure o repositório da API também!
 
-It uses ESP-MQTT library which implements mqtt client to connect to mqtt broker with MQTT version 5.
+---
 
-The more details about MQTT v5, please refer to [official website](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html)
+## 🚀 Tecnologias Utilizadas
 
-## How to use example
+- ESP-IDF (framework oficial da Espressif)
+- Linguagem C
+- Protocolo MQTT 5
 
-### Hardware Required
+---
 
-This example can be executed on any ESP32 board, the only required interface is WiFi and connection to internet.
+## 🔌 Componentes Utilizados
 
-### Configure the project
+- ESP32 WROOM-32
+- [Leitor RFID + Tag e Cartão (MFRC522)](https://www.eletrogate.com/kit-modulo-rfid-mfrc522-1356-mhz)
+- [Buzzer Ativo 5V](https://www.eletrogate.com/buzzer-ativo-5v)
+- LEDs difusos 3mm (Azul, Verde, Vermelho) + resistores 10k ohms
+- [Relé 1 Canal 5V](https://www.eletrogate.com/modulo-rele-1-canal-5v)
+- Jumpers macho-fêmea
+- Conversor de tensão
+- [Display LCD 16x2 com I2C](https://www.eletrogate.com/display-lcd-16x2-i2c-backlight-azul)
+- [Fechadura Eletrônica 12V](https://www.eletrogate.com/fechadura-eletronica-mk-202-12v)
+- Fonte 12V 10A
+- [Protoboard 830 pontos](https://www.eletrogate.com/protoboard-830-pontos)
 
-* Open the project configuration menu (`idf.py menuconfig`)
-* Configure Wi-Fi or Ethernet under "Example Connection Configuration" menu. See "Establishing Wi-Fi or Ethernet Connection" section in [examples/protocols/README.md](../../README.md) for more details.
-* MQTT v5 protocol (`CONFIG_MQTT_PROTOCOL_5`) under "ESP-MQTT Configurations" menu is enabled by `sdkconfig.defaults`.
+---
 
-### Build and Flash
+## ⚙️ Conexões dos Componentes com a ESP32
 
-Build the project and flash it to the board, then run monitor tool to view serial output:
+### 📟 Leitor RFID MFRC522
+- SDA → GPIO 5  
+- SCK → GPIO 18  
+- MOSI → GPIO 23  
+- MISO → GPIO 19  
+- RST → GPIO 4  
+- GND → GND Direito  
+- 3V3 → 3V3
+
+### 🔔 Buzzer Ativo
+- Positivo → GPIO 15  
+- Negativo → GND Esquerdo
+
+### 💡 LEDs
+- Azul → GPIO 14  
+- Verde → GPIO 13  
+- Vermelho → GPIO 25
+
+### 📺 Display LCD 16x2 (I2C)
+- SDA → GPIO 21  
+- SCL → GPIO 22
+
+### 🔌 Relé 1 canal 5v
+- VIN → GPIO 32
+
+## 🔋 Alimentação Elétrica do Sistema
+
+Neste projeto, a alimentação é feita com uma **fonte de 12V 10A**, que supre toda a corrente necessária para a tranca e demais componentes.
+
+### 🔧 Funcionamento da Distribuição de Energia:
+
+- A **fonte 12V** é conectada diretamente a:
+  - Um **conversor de tensão (step-down)**, que **reduz de 12V para 5V**.
+  - A saída de 5V do conversor é usada para alimentar:
+    - ESP32  
+    - Leitor RFID  
+    - Relé  
+    - Display LCD  
+    - LEDs  
+    - Buzzer  
+
+- A **fechadura eletrônica 12V** recebe os **12V diretamente da fonte**, mas **só é energizada quando o relé é acionado**.
+
+- Também é utilizado um **diodo 1N5408** entre a **saída de 12V do relé e a tranca eletrônica**, com o objetivo de:
+  - **Impedir o retorno de corrente** para os outros componentes do circuito após a tranca ser desativada.
+  - **Proteger o circuito** contra picos ou retorno indesejado de tensão, aumentando a segurança da alimentação.
+
+> ⚠️ O relé atua como uma chave controlada pela ESP32, quando o acesso é autorizado, ele fecha o circuito e permite que os 12V cheguem à tranca.
+
+> 💡Também foi utilizado uma protoboard de 830 pinos, facilitando a conexão dos componentes entre si e a alimentação elétrica.
+---
+
+### 🧭 Esquema Resumido
 
 ```
-idf.py -p PORT flash monitor
+[Fonte 12V] ─┬─> [Conversor Step-down] ──> [ESP32 + Componentes (5V)]
+             │
+             └─> [Relé] ──> [Diodo 1N5408] ──> [Tranca 12V]
 ```
 
-(To exit the serial monitor, type ``Ctrl-]``.)
+Essa abordagem garante que todos os componentes sejam alimentados corretamente e com segurança, sem sobrecarregar a ESP32 ou correr risco de retorno de corrente.
 
-See the Getting Started Guide for full steps to configure and use ESP-IDF to build projects.
+## 📡 Configuração do Broker MQTT (Mosquitto)
 
-## Example Output
+Para este projeto, foi utilizado um **broker MQTT local**, utilizando o [Mosquitto](https://mosquitto.org/). Se você deseja seguir esse mesmo modelo, siga os passos abaixo:
 
+### 🧩 Instalação do Mosquitto
+
+1. **Baixe e instale o Mosquitto:**
+
+   - Acesse: https://mosquitto.org/download/
+   - Baixe a versão adequada para o seu sistema operacional.
+   - Instale normalmente (em Windows, marque a opção para instalar como serviço, se desejar).
+
+2. **Configure o broker:**
+
+   - Após a instalação, localize o arquivo `mosquitto.conf` na **pasta raiz de instalação** (exemplo: `C:\Program Files\Mosquitto\`).
+
+   - Edite o arquivo `mosquitto.conf` e adicione as seguintes configurações ao final:
+
+     ```conf
+     listener 1883
+     allow_anonymous true
+     ```
+
+   - Salve o arquivo após a edição.
+
+### ▶️ Iniciando o Broker
+
+Para iniciar o Mosquitto com o arquivo de configuração personalizado, utilize o seguinte comando no terminal ou prompt de comando:
+
+```bash
+mosquitto -c "C:\caminho\para\mosquitto.conf" -v
 ```
-I (5119) esp_netif_handlers: example_connect: sta ip: 192.168.3.143, mask: 255.255.255.0, gw: 192.168.3.1
-I (5119) example_connect: Got IPv4 event: Interface "example_connect: sta" address: 192.168.3.143
-I (5619) example_connect: Got IPv6 event: Interface "example_connect: sta" address: fe80:0000:0000:0000:c64f:33ff:fe24:6645, type: ESP_IP6_ADDR_IS_LINK_LOCAL
-I (5619) example_connect: Connected to example_connect: sta
-I (5629) example_connect: - IPv4 address: 192.168.3.143
-I (5629) example_connect: - IPv6 address: fe80:0000:0000:0000:c64f:33ff:fe24:6645, type: ESP_IP6_ADDR_IS_LINK_LOCAL
-I (5649) MQTT5_EXAMPLE: Other event id:7
-W (6299) wifi:<ba-add>idx:0 (ifx:0, 34:29:12:43:c5:40), tid:7, ssn:0, winSize:64
-I (7439) MQTT5_EXAMPLE: MQTT_EVENT_CONNECTED
-I (7439) MQTT5_EXAMPLE: sent publish successful, msg_id=53118
-I (7439) MQTT5_EXAMPLE: sent subscribe successful, msg_id=41391
-I (7439) MQTT5_EXAMPLE: sent subscribe successful, msg_id=13695
-I (7449) MQTT5_EXAMPLE: sent unsubscribe successful, msg_id=55594
-I (7649) mqtt5_client: MQTT_MSG_TYPE_PUBACK return code is -1
-I (7649) MQTT5_EXAMPLE: MQTT_EVENT_PUBLISHED, msg_id=53118
-I (8039) mqtt5_client: MQTT_MSG_TYPE_SUBACK return code is 0
-I (8049) MQTT5_EXAMPLE: MQTT_EVENT_SUBSCRIBED, msg_id=41391
-I (8049) MQTT5_EXAMPLE: sent publish successful, msg_id=0
-I (8059) mqtt5_client: MQTT_MSG_TYPE_SUBACK return code is 2
-I (8059) MQTT5_EXAMPLE: MQTT_EVENT_SUBSCRIBED, msg_id=13695
-I (8069) MQTT5_EXAMPLE: sent publish successful, msg_id=0
-I (8079) MQTT5_EXAMPLE: MQTT_EVENT_DATA
-I (8079) MQTT5_EXAMPLE: key is board, value is esp32
-I (8079) MQTT5_EXAMPLE: key is u, value is user
-I (8089) MQTT5_EXAMPLE: key is p, value is password
-I (8089) MQTT5_EXAMPLE: payload_format_indicator is 1
-I (8099) MQTT5_EXAMPLE: response_topic is /topic/test/response
-I (8109) MQTT5_EXAMPLE: correlation_data is 123456
-I (8109) MQTT5_EXAMPLE: content_type is 
-I (8119) MQTT5_EXAMPLE: TOPIC=/topic/qos1
-I (8119) MQTT5_EXAMPLE: DATA=data_3
-I (8129) mqtt5_client: MQTT_MSG_TYPE_UNSUBACK return code is 0
-I (8129) MQTT5_EXAMPLE: MQTT_EVENT_UNSUBSCRIBED, msg_id=55594
-I (8139) mqtt_client: Client asked to disconnect
-I (9159) MQTT5_EXAMPLE: MQTT_EVENT_DISCONNECTED
+
+> 🔁 O parâmetro `-v` ativa o modo verboso, permitindo ver as mensagens trocadas no broker (útil para testes e depuração).
+
+---
+
+### ⚠️ Considerações Importantes
+
+- A **ESP32**, a **API da tranca** e o **broker MQTT** **devem estar na mesma rede local**, pois trata-se de um broker local sem exposição externa.
+- Tanto a **tranca eletrônica (ESP32)** quanto a **API** precisam se conectar a esse mesmo broker para que a comunicação funcione corretamente.
+- Pode ser necessário **permitir a porta `1883` no firewall** do seu sistema para que as conexões MQTT funcionem corretamente.
+
+> 💡 Se desejar, você pode usar um broker MQTT público ou hospedado na nuvem, como o HiveMQ, EMQX ou Mosquitto hospedado remotamente. Nesse caso, lembre-se de configurar as credenciais e URLs nos arquivos do projeto.
+
+---
+
+## 🛠️ Como Rodar o Projeto
+
+1. **Clone ou baixe o repositório:**
+
+```bash
+git clone https://github.com/MatheusH2021/tranca-eletronica-rfid.git
 ```
+
+2. **Configure o ambiente ESP-IDF:**
+
+- Instale o ESP-IDF na sua máquina (recomendado utilizar a extensão do VSCode).
+- Siga os passos oficiais: [Instalação do ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/)
+
+3. **Compile o projeto:**
+
+```bash
+idf.py build
+```
+
+4. **Configure a rede Wi-Fi:**
+
+- Acesse o arquivo `sdkconfig` e edite as seguintes variáveis:
+
+```text
+CONFIG_EXAMPLE_WIFI_SSID="nome_da_sua_rede_wifi"
+CONFIG_EXAMPLE_WIFI_PASSWORD="senha_da_sua_rede"
+```
+
+> 💡 Alternativamente, você pode usar o menuconfig do ESP-IDF para configurar:
+
+```bash
+idf.py menuconfig
+```
+- Vá em `Example Configuration` e insira sua SSID e senha.
+
+5. **Configure o broker MQTT:**
+
+- No arquivo `main/app_main.c`, nas primeiras linhas, localize e edite a variável:
+
+```c
+#define MQTT_BROKER_ADDR "mqtt://<SEU_BROKER>"
+```
+
+> Substitua `<SEU_BROKER>` pelo endereço do seu broker MQTT (deve ser o mesmo usado na API).
+
+6. **Conecte a ESP32 ao computador e execute os comandos:**
+
+```bash
+idf.py build         # Compila o projeto
+idf.py flash         # Realiza o upload do firmware para a ESP32
+idf.py monitor       # Inicia o monitor serial para visualizar os logs
+```
+
+> Se estiver usando o VSCode com ESP-IDF:
+- Clique nos ícones "Build", "Flash" e "Monitor" na barra lateral da extensão.
+
+---
+
+## 🧪 Como Testar o Projeto
+
+Após seguir os passos acima, com a API da tranca **ativa** e o **broker MQTT funcionando**, a ESP32 irá:
+
+1. Exibir no LCD:
+   - "Conectando ao Wi-Fi"
+   - "Conectando ao broker MQTT"
+   - "Aproxime Tag ou Cartao RFID"
+
+2. Ao aproximar uma tag/crachá:
+   - LED azul pisca 2x
+   - Se **cadastrada e ativa**:
+     - LED verde pisca 2x
+     - Buzzer emite 1 bip
+     - Relé é ativado → tranca liberada
+     - LCD: `UID: [UID]` e `Acesso Permitido`
+
+   - Se **não cadastrada ou inativa**:
+     - LED vermelho pisca 2x
+     - Buzzer emite 2 bips
+     - Tranca permanece fechada
+     - LCD: `UID: [UID]` e `Acesso Negado`
+
+   - Se a leitura for muito rápida:
+     - LED vermelho pisca 2x
+     - Buzzer emite 3 bips
+     - LCD: `Mantenha próximo por mais tempo`
+
+---
+
+## 🔄 Funcionamento Interno
+
+1. ESP32 lê a tag RFID.
+2. Publica o UID no tópico MQTT: `esp32/tranca/autenticar`.
+3. A API responde no tópico `esp32/tranca/desbloquear`:
+   - `"1"` → Acesso liberado.
+   - `"0"` → Acesso negado.
+4. A ESP32 aciona os atuadores e atualiza o display LCD conforme a resposta.
+
+---
+
+## ✅ Requisitos
+
+- ESP32 com suporte ao ESP-IDF
+- Rede Wi-Fi disponível
+- Broker MQTT configurado
+- API da tranca (Tranca API) devidamente instalada e em execução
+
+---

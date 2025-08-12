@@ -105,7 +105,9 @@ Essa abordagem garante que todos os componentes sejam alimentados corretamente e
 
 > 💡 A linha de energia da protoboard do lado de baixo é alimentada com 12v, e a linha de cima é alimentada pelo coversor MP1584 com 5v
 
-> 💡No esquema a fechadura 12v não está presente, mas ela também faz parte do projeto, conectada o GND a linha inferior negativa da protoboard e o positivo conectado a saida NC do relé. A entrada COM do relé também recebe os 12v.
+> 💡 No esquema a fechadura 12v não está presente, mas ela também faz parte do projeto, conectada o GND a linha inferior negativa da protoboard e o positivo conectado a saida NC do relé. A entrada COM do relé também recebe os 12v.
+
+> 💡 Leitor rfid MFRC522 e conversor MP1584 presentes de forma ilustrativa, pois a plataforma não possuia os componentes expecíficos para montagem do esquema.
 ---
 
 ## 📡 Configuração do Broker MQTT (Mosquitto)

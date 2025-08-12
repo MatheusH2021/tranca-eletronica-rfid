@@ -485,9 +485,9 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
         break;
     case MQTT_EVENT_DATA:
         ESP_LOGI(TAG, "MQTT_EVENT_DATA");
-        // Aqui realizamos a logica de gerenciamento do LED
-        // quando recebe 1- Liga o LED
-        // quando recebe 0- Desliga o LED
+        // Aqui realizamos a logica de gerenciamento da Fecharura
+        // quando recebe 1- Destranca a fechadura
+        // quando recebe 0- Significa que a tag lida ou não está cadastrada ou está desativada
 
         // Verifica se o topico recebido é igual ao tópico definido
         if (event->topic_len == strlen(MQTT_BROKER_TOPIC_UNLOCK) &&
@@ -506,7 +506,7 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
                 // Analisa o comando usando switch-case 
                 switch (cmd) {
                     case '1':
-                        // Neste case, caso o comando seja 1- Ativa o LED, Loga a ação realizada
+                        // Neste case, caso o comando seja 1- Destranca a fechadura
                         blink_led(GREEN_LED_PIN_NUM, 100);
                         vTaskDelay(pdMS_TO_TICKS(100));
                         blink_led(GREEN_LED_PIN_NUM, 100);
@@ -638,7 +638,6 @@ void handle_send(const char* uid) {
 
 void app_main(void)
 {
-
     // Configura GPIOs
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << BUZZER_PIN_NUM),

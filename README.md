@@ -38,7 +38,7 @@ A lógica é simples: ao aproximar uma tag RFID do leitor, o sistema verifica se
 ## ⚙️ Conexões dos Componentes com a ESP32
 
 ### 📟 Leitor RFID MFRC522
-- SDA → GPIO 5  
+- SDA (CS) → GPIO 5  
 - SCK → GPIO 18  
 - MOSI → GPIO 23  
 - MISO → GPIO 19  

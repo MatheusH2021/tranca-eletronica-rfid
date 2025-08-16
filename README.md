@@ -255,12 +255,3 @@ Após seguir os passos acima, com a API da tranca **ativa** e o **broker MQTT fu
 4. A ESP32 aciona os atuadores e atualiza o display LCD conforme a resposta.
 
 ---
-
-## ✅ Requisitos
-
-- ESP32 com suporte ao ESP-IDF
-- Rede Wi-Fi disponível
-- Broker MQTT configurado
-- API da tranca (Tranca API) devidamente instalada e em execução
-
----
